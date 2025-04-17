@@ -26,18 +26,6 @@ pipeline {
                 bat 'pytest tests/ --alluredir=allure-results -v --capture=no'
             }
         }
-        
-        stage('Generate Allure Report') {
-            steps {
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    properties: [],
-                    reportBuildPolicy: 'ALWAYS',
-                    results: [[path: 'allure-results']]
-                ])
-            }
-        }
     }
     
     post {
