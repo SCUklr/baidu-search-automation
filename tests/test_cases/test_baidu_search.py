@@ -15,20 +15,17 @@ from selenium.webdriver.support import expected_conditions as EC
 @pytest.fixture(scope="function")
 def driver():
     """
-    设置浏览器驱动
+    初始化WebDriver
     """
     if BROWSER.lower() == "chrome":
         options = webdriver.ChromeOptions()
         if HEADLESS:
             options.add_argument("--headless")
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        driver = webdriver.Chrome(options=options)
     else:
-        options = webdriver.FirefoxOptions()
-        if HEADLESS:
-            options.add_argument("--headless")
-        driver = webdriver.Firefox(GeckoDriverManager().install(), options=options)
-    
-    driver.maximize_window()
+        driver = webdriver.Firefox()
     yield driver
     driver.quit()
 
