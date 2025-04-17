@@ -90,13 +90,13 @@ class TestBaiduSearch:
         page = BaiduPage(driver)
         page.open()
         
-        # 输入文本并清空
+        # 输入测试文本并清空
         page.input_search_text("test text")
         page.clear_search_input()
         
         # 验证搜索框是否为空
-        search_input = page.find_element(page.locators.SEARCH_INPUT)
-        assert search_input.get_attribute("value") == "", "搜索框未被清空"
+        search_input = page.find_element(page.SEARCH_BOX)
+        assert search_input.get_attribute("value") == "", "搜索框未清空"
 
     @allure.story("基本搜索功能")
     @allure.severity(allure.severity_level.CRITICAL)

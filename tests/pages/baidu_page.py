@@ -18,8 +18,8 @@ class BaiduPage(BasePage):
     # 页面元素定位
     SEARCH_BOX = (By.ID, "kw")
     SEARCH_BUTTON = (By.ID, "su")
-    SEARCH_SUGGESTIONS = (By.CSS_SELECTOR, ".bdsug li")
-    SEARCH_RESULTS = (By.CSS_SELECTOR, ".result.c-container")
+    SEARCH_SUGGESTIONS = (By.CSS_SELECTOR, ".bdsug-overflow li")
+    SEARCH_RESULTS = (By.CSS_SELECTOR, ".result-op.c-container")
 
     @allure.step("打开百度首页")
     def open(self):
@@ -79,10 +79,13 @@ class BaiduPage(BasePage):
     @allure.step("使用回车键进行搜索")
     def search_with_enter(self, keyword):
         """使用回车键进行搜索"""
-        search_input = self.find_element(self.SEARCH_BOX)
+        search_input = self.wait.until(EC.presence_of_element_located(self.SEARCH_BOX))
         search_input.clear()
         search_input.send_keys(keyword)
         search_input.send_keys(Keys.RETURN)
+        
+        # 等待搜索结果加载
+        self.wait.until(EC.presence_of_all_elements_located(self.SEARCH_RESULTS))
         return self
 
     @allure.step("清空搜索框")
