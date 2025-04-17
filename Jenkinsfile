@@ -16,26 +16,42 @@ pipeline {
         
         stage('Setup Python') {
             steps {
-                bat 'python -m pip install --upgrade pip'
-                bat 'pip install -r requirements.txt'
+                script {
+                    try {
+                        bat 'python -V'
+                    } catch (Exception e) {
+                        error "Python not found. Please install Python and add it to PATH"
+                    }
+                    bat 'python -m pip install --upgrade pip'
+                    bat 'pip install -r requirements.txt'
+                }
             }
         }
         
         stage('Run Tests') {
             steps {
-                bat 'pytest tests/ --alluredir=allure-results'
+                script {
+                    try {
+                        bat 'mkdir allure-results'
+                    } catch (Exception e) {
+                        echo "Directory may already exist"
+                    }
+                    bat 'python -m pytest tests/ --alluredir=allure-results'
+                }
             }
         }
         
         stage('Generate Allure Report') {
             steps {
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    properties: [],
-                    reportBuildPolicy: 'ALWAYS',
-                    results: [[path: 'allure-results']]
-                ])
+                script {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: 'allure-results']]
+                    ])
+                }
             }
         }
     }
