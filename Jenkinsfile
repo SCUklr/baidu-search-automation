@@ -7,6 +7,10 @@ pipeline {
         HEADLESS = 'true'
     }
     
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+    
     stages {
         stage('Checkout') {
             steps {
@@ -38,12 +42,19 @@ pipeline {
     
     post {
         always {
-            allure([
-                includeProperties: false,
-                jdk: '',
-                reportBuildPolicy: 'ALWAYS',
-                results: [[path: 'allure-results']]
-            ])
+            script {
+                // 如果测试全部通过，强制设置构建状态为SUCCESS
+                if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
+                    currentBuild.result = 'SUCCESS'
+                }
+                
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    reportBuildPolicy: 'ALWAYS',
+                    results: [[path: 'allure-results']]
+                ])
+            }
         }
         success {
             echo '所有测试用例执行成功！'
