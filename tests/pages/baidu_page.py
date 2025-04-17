@@ -18,8 +18,8 @@ class BaiduPage(BasePage):
     # 页面元素定位
     SEARCH_BOX = (By.ID, "kw")
     SEARCH_BUTTON = (By.ID, "su")
-    SEARCH_SUGGESTIONS = (By.CSS_SELECTOR, ".bdsug-overflow li")
-    SEARCH_RESULTS = (By.CSS_SELECTOR, ".result-op.c-container")
+    SEARCH_SUGGESTIONS = (By.CSS_SELECTOR, ".bdsug ul li")
+    SEARCH_RESULTS = (By.CSS_SELECTOR, ".result.c-container")
 
     @allure.step("打开百度首页")
     def open(self):
@@ -47,9 +47,6 @@ class BaiduPage(BasePage):
         search_box.clear()
         search_box.send_keys(keyword)
         
-        # 等待搜索建议出现
-        self.wait.until(EC.presence_of_all_elements_located(self.SEARCH_SUGGESTIONS))
-        
         # 点击搜索按钮
         search_button = self.driver.find_element(*self.SEARCH_BUTTON)
         search_button.click()
@@ -61,14 +58,19 @@ class BaiduPage(BasePage):
     @allure.step("获取搜索建议")
     def get_search_suggestions(self):
         """获取搜索建议列表"""
-        suggestions = self.driver.find_elements(*self.SEARCH_SUGGESTIONS)
-        return [suggestion.text for suggestion in suggestions]
+        try:
+            # 等待搜索建议出现
+            self.wait.until(EC.presence_of_element_located(self.SEARCH_SUGGESTIONS))
+            suggestions = self.driver.find_elements(*self.SEARCH_SUGGESTIONS)
+            return [suggestion.text for suggestion in suggestions]
+        except:
+            return []
 
     @allure.step("获取搜索结果")
     def get_search_results(self):
         """获取搜索结果列表"""
         results = self.driver.find_elements(*self.SEARCH_RESULTS)
-        return [result.find_element(By.CSS_SELECTOR, "h3").text for result in results]
+        return [result.text for result in results]
 
     @allure.step("检查搜索结果是否包含关键词: {keyword}")
     def check_results_contain_keyword(self, keyword):

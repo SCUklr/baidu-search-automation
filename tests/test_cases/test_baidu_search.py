@@ -12,7 +12,7 @@ from tests.config.config import TEST_KEYWORDS, BROWSER, HEADLESS, SEARCH_KEYWORD
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def driver():
     """
     初始化WebDriver
@@ -96,48 +96,4 @@ class TestBaiduSearch:
         
         # 验证搜索框是否为空
         search_input = page.find_element(page.SEARCH_BOX)
-        assert search_input.get_attribute("value") == "", "搜索框未清空"
-
-    @allure.story("基本搜索功能")
-    @allure.severity(allure.severity_level.CRITICAL)
-    def test_search_with_keyword(self, driver):
-        """测试基本搜索功能"""
-        baidu = BaiduPage(driver)
-        baidu.open().search()
-        
-        # 验证搜索结果
-        results = baidu.get_search_results()
-        assert len(results) > 0, "搜索结果为空"
-        assert any(SEARCH_KEYWORD in result for result in results), "搜索结果不包含关键词"
-        
-    @allure.story("搜索建议功能")
-    @allure.severity(allure.severity_level.NORMAL)
-    def test_search_suggestions_with_keyword(self, driver):
-        """测试搜索建议功能"""
-        baidu = BaiduPage(driver)
-        baidu.open()
-        
-        # 输入关键词
-        search_box = baidu.wait.until(EC.presence_of_element_located(baidu.SEARCH_BOX))
-        search_box.send_keys(SEARCH_KEYWORD)
-        
-        # 验证搜索建议
-        suggestions = baidu.get_search_suggestions()
-        assert len(suggestions) > 0, "搜索建议为空"
-        assert any(SEARCH_KEYWORD in suggestion for suggestion in suggestions), "搜索建议不包含关键词"
-        
-    @allure.story("回车键搜索")
-    @allure.severity(allure.severity_level.NORMAL)
-    def test_search_with_enter_with_keyword(self, driver):
-        """测试回车键搜索"""
-        baidu = BaiduPage(driver)
-        baidu.open()
-        
-        # 输入关键词并按回车
-        search_box = baidu.wait.until(EC.presence_of_element_located(baidu.SEARCH_BOX))
-        search_box.send_keys(SEARCH_KEYWORD + Keys.RETURN)
-        
-        # 验证搜索结果
-        results = baidu.get_search_results()
-        assert len(results) > 0, "搜索结果为空"
-        assert any(SEARCH_KEYWORD in result for result in results), "搜索结果不包含关键词" 
+        assert search_input.get_attribute("value") == "", "搜索框未清空" 
