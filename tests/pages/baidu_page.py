@@ -4,7 +4,7 @@
 import allure
 from selenium.webdriver.common.keys import Keys
 from tests.pages.base_page import BasePage
-from tests.config.config import Locators, BASE_URL, WAIT_TIMEOUT, SEARCH_KEYWORD
+from tests.config.config import BASE_URL, WAIT_TIMEOUT, SEARCH_KEYWORD
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -30,13 +30,13 @@ class BaiduPage(BasePage):
     @allure.step("输入搜索关键词: {keyword}")
     def input_search_text(self, keyword):
         """输入搜索关键词"""
-        self.input_text(Locators.SEARCH_INPUT, keyword)
+        self.input_text(self.SEARCH_BOX, keyword)
         return self
 
     @allure.step("点击搜索按钮")
     def click_search(self):
         """点击搜索按钮"""
-        self.click(Locators.SEARCH_BUTTON)
+        self.click(self.SEARCH_BUTTON)
         return self
 
     @allure.step("执行搜索操作: {keyword}")
@@ -79,7 +79,7 @@ class BaiduPage(BasePage):
     @allure.step("使用回车键进行搜索")
     def search_with_enter(self, keyword):
         """使用回车键进行搜索"""
-        search_input = self.find_element(Locators.SEARCH_INPUT)
+        search_input = self.find_element(self.SEARCH_BOX)
         search_input.clear()
         search_input.send_keys(keyword)
         search_input.send_keys(Keys.RETURN)
@@ -88,6 +88,6 @@ class BaiduPage(BasePage):
     @allure.step("清空搜索框")
     def clear_search_input(self):
         """清空搜索框"""
-        search_input = self.find_element(Locators.SEARCH_INPUT)
+        search_input = self.find_element(self.SEARCH_BOX)
         search_input.clear()
         return self 
