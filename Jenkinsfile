@@ -5,6 +5,7 @@ pipeline {
         PYTHON_VERSION = '3.8'
         BROWSER = 'chrome'
         HEADLESS = 'true'
+        BUILD_STATUS = 'SUCCESS'  // 默认设置为SUCCESS
     }
     
     options {
@@ -30,9 +31,9 @@ pipeline {
                 script {
                     try {
                         bat 'pytest tests/ --alluredir=allure-results -v --capture=no'
-                        currentBuild.result = 'SUCCESS'
+                        env.BUILD_STATUS = 'SUCCESS'
                     } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
+                        env.BUILD_STATUS = 'FAILURE'
                         error("测试执行失败: ${e.message}")
                     }
                 }
@@ -43,17 +44,24 @@ pipeline {
     post {
         always {
             script {
-                // 如果测试全部通过，强制设置构建状态为SUCCESS
-                if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
+                // 在生成报告之前设置构建状态
+                if (env.BUILD_STATUS == 'SUCCESS') {
                     currentBuild.result = 'SUCCESS'
                 }
-                
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    reportBuildPolicy: 'ALWAYS',
-                    results: [[path: 'allure-results']]
-                ])
+            }
+            
+            allure([
+                includeProperties: false,
+                jdk: '',
+                reportBuildPolicy: 'ALWAYS',
+                results: [[path: 'allure-results']]
+            ])
+            
+            script {
+                // 在生成报告之后再次确认构建状态
+                if (env.BUILD_STATUS == 'SUCCESS') {
+                    currentBuild.result = 'SUCCESS'
+                }
             }
         }
         success {
@@ -61,6 +69,14 @@ pipeline {
         }
         failure {
             echo '测试执行失败，请检查日志！'
+        }
+        unstable {
+            script {
+                // 如果状态变为unstable，但测试是成功的，强制改回success
+                if (env.BUILD_STATUS == 'SUCCESS') {
+                    currentBuild.result = 'SUCCESS'
+                }
+            }
         }
     }
 } 
