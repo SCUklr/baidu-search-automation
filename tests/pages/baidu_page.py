@@ -4,12 +4,22 @@
 import allure
 from selenium.webdriver.common.keys import Keys
 from tests.pages.base_page import BasePage
-from tests.config.config import Locators, BASE_URL
+from tests.config.config import Locators, BASE_URL, WAIT_TIMEOUT, SEARCH_KEYWORD
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class BaiduPage(BasePage):
     def __init__(self, driver):
         super().__init__(driver)
         self.url = BASE_URL
+        self.wait = WebDriverWait(driver, WAIT_TIMEOUT)
+        
+    # 页面元素定位
+    SEARCH_BOX = (By.ID, "kw")
+    SEARCH_BUTTON = (By.ID, "su")
+    SEARCH_SUGGESTIONS = (By.CSS_SELECTOR, ".bdsug li")
+    SEARCH_RESULTS = (By.CSS_SELECTOR, ".result.c-container")
 
     @allure.step("打开百度首页")
     def open(self):
@@ -30,25 +40,35 @@ class BaiduPage(BasePage):
         return self
 
     @allure.step("执行搜索操作: {keyword}")
-    def search(self, keyword):
+    def search(self, keyword=SEARCH_KEYWORD):
         """执行搜索操作"""
-        self.input_search_text(keyword)
-        self.click_search()
+        # 输入搜索关键词
+        search_box = self.wait.until(EC.presence_of_element_located(self.SEARCH_BOX))
+        search_box.clear()
+        search_box.send_keys(keyword)
+        
+        # 等待搜索建议出现
+        self.wait.until(EC.presence_of_all_elements_located(self.SEARCH_SUGGESTIONS))
+        
+        # 点击搜索按钮
+        search_button = self.driver.find_element(*self.SEARCH_BUTTON)
+        search_button.click()
+        
+        # 等待搜索结果加载
+        self.wait.until(EC.presence_of_all_elements_located(self.SEARCH_RESULTS))
         return self
 
     @allure.step("获取搜索建议")
     def get_search_suggestions(self):
         """获取搜索建议列表"""
-        if self.is_element_present(Locators.SEARCH_SUGGESTIONS):
-            suggestions = self.find_elements(Locators.SEARCH_SUGGESTIONS)
-            return [suggestion.text for suggestion in suggestions]
-        return []
+        suggestions = self.driver.find_elements(*self.SEARCH_SUGGESTIONS)
+        return [suggestion.text for suggestion in suggestions]
 
     @allure.step("获取搜索结果")
     def get_search_results(self):
         """获取搜索结果列表"""
-        results = self.find_elements(Locators.SEARCH_RESULTS)
-        return [result.text for result in results]
+        results = self.driver.find_elements(*self.SEARCH_RESULTS)
+        return [result.find_element(By.CSS_SELECTOR, "h3").text for result in results]
 
     @allure.step("检查搜索结果是否包含关键词: {keyword}")
     def check_results_contain_keyword(self, keyword):
