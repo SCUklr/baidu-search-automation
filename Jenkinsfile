@@ -23,7 +23,15 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                bat 'pytest tests/ --alluredir=allure-results -v --capture=no'
+                script {
+                    try {
+                        bat 'pytest tests/ --alluredir=allure-results -v --capture=no'
+                        currentBuild.result = 'SUCCESS'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("测试执行失败: ${e.message}")
+                    }
+                }
             }
         }
     }
@@ -36,6 +44,12 @@ pipeline {
                 reportBuildPolicy: 'ALWAYS',
                 results: [[path: 'allure-results']]
             ])
+        }
+        success {
+            echo '所有测试用例执行成功！'
+        }
+        failure {
+            echo '测试执行失败，请检查日志！'
         }
     }
 } 
